@@ -1,0 +1,11 @@
+[package]
+name = "vehicle_ft"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+near-sdk = "5.24.1"
+near-contract-standards = "5.24.1"
