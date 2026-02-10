@@ -4,9 +4,8 @@ use near_sdk::{
     AccountId,
     PanicOnDefault,
     require,
-    env,
+    env,NearToken,assert_one_yocto
 };
-
 use near_sdk::json_types::U128;
 
 use near_contract_standards::fungible_token::FungibleToken;
@@ -16,6 +15,9 @@ use near_contract_standards::fungible_token::metadata::{
     FungibleTokenMetadataProvider,
     FT_METADATA_SPEC,
 };
+use near_contract_standards::storage_management::{
+    StorageManagement, StorageBalance, StorageBalanceBounds,
+};
 
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
@@ -24,19 +26,15 @@ pub struct VehicleFTContract {
     pub token: FungibleToken,
 }
 
-#[near_bindgen]
+#[near]
 impl VehicleFTContract {
 
     #[init]
-    pub fn new(
-        owner_id: AccountId,
-        total_supply: U128,
-    ) -> Self {
+    pub fn new(owner_id: AccountId, total_supply: U128) -> Self {
         require!(!env::state_exists(), "Already initialized");
 
         let mut token = FungibleToken::new(b"t".to_vec());
 
-        // Mint inicial: TODO el supply al owner
         token.internal_register_account(&owner_id);
         token.internal_deposit(&owner_id, total_supply.0);
 
@@ -46,23 +44,44 @@ impl VehicleFTContract {
         }
     }
 
-    // 🔒 Mint bloqueado (diseño intencional)
+    /// 🔒 Mint bloqueado
     pub fn mint_disabled(&self) {
         panic!("Minting is disabled");
     }
+
+    /// 🔥 Burn ALL tokens from an account (used for NFT claim)
+    #[private]
+    pub fn burn_all_from(&mut self, account_id: AccountId) {
+        require!(
+            env::predecessor_account_id() == self.owner_id,
+            "Only NFT contract can burn tokens"
+        );
+
+        let balance = self.token.ft_balance_of(account_id.clone()).0;
+        require!(balance > 0, "Nothing to burn");
+
+        self.token.internal_withdraw(&account_id, balance);
+        self.token.total_supply -= balance;
+    }
 }
 
-#[near_bindgen]
+/* ---------------- FT CORE ---------------- */
+
+#[near]
 impl FungibleTokenCore for VehicleFTContract {
+
+    #[payable]
     fn ft_transfer(
         &mut self,
         receiver_id: AccountId,
         amount: U128,
         memo: Option<String>,
     ) {
+        assert_one_yocto();
         self.token.ft_transfer(receiver_id, amount, memo)
     }
 
+    #[payable]
     fn ft_transfer_call(
         &mut self,
         receiver_id: AccountId,
@@ -70,6 +89,7 @@ impl FungibleTokenCore for VehicleFTContract {
         memo: Option<String>,
         msg: String,
     ) -> near_sdk::PromiseOrValue<U128> {
+        assert_one_yocto();
         self.token.ft_transfer_call(receiver_id, amount, memo, msg)
     }
 
@@ -82,14 +102,56 @@ impl FungibleTokenCore for VehicleFTContract {
     }
 }
 
-#[near_bindgen]
+
+/* ---------------- STORAGE MANAGEMENT (CLAVE) ---------------- */
+
+#[near]
+impl StorageManagement for VehicleFTContract {
+
+    #[payable]
+    fn storage_deposit(
+        &mut self,
+        account_id: Option<AccountId>,
+        registration_only: Option<bool>,
+    ) -> StorageBalance {
+        self.token.storage_deposit(account_id, registration_only)
+    }
+
+    #[payable]
+    fn storage_withdraw(
+        &mut self,
+        amount: Option<NearToken>,
+    ) -> StorageBalance {
+        self.token.storage_withdraw(amount)
+    }
+
+    fn storage_unregister(&mut self, force: Option<bool>) -> bool {
+        self.token.storage_unregister(force)
+    }
+
+    fn storage_balance_of(
+        &self,
+        account_id: AccountId,
+    ) -> Option<StorageBalance> {
+        self.token.storage_balance_of(account_id)
+    }
+
+    fn storage_balance_bounds(&self) -> StorageBalanceBounds {
+        self.token.storage_balance_bounds()
+    }
+}
+
+
+/* ---------------- METADATA ---------------- */
+
+#[near]
 impl FungibleTokenMetadataProvider for VehicleFTContract {
     fn ft_metadata(&self) -> FungibleTokenMetadata {
         FungibleTokenMetadata {
             spec: FT_METADATA_SPEC.to_string(),
             name: "Vehicle Ownership Token".to_string(),
             symbol: "vUSD".to_string(),
-            decimals: 0, // 1 token = 1 USD
+            decimals: 0,
             icon: None,
             reference: None,
             reference_hash: None,
