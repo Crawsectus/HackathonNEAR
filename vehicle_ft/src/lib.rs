@@ -23,6 +23,7 @@ use near_contract_standards::storage_management::{
 #[derive(PanicOnDefault)]
 pub struct VehicleFTContract {
     pub owner_id: AccountId,
+    pub nft_contract_id: AccountId,  
     pub token: FungibleToken,
 }
 
@@ -30,7 +31,11 @@ pub struct VehicleFTContract {
 impl VehicleFTContract {
 
     #[init]
-    pub fn new(owner_id: AccountId, total_supply: U128) -> Self {
+    pub fn new(
+        owner_id: AccountId,
+        total_supply: U128,
+        nft_contract_id: AccountId,
+    ) -> Self {
         require!(!env::state_exists(), "Already initialized");
 
         let mut token = FungibleToken::new(b"t".to_vec());
@@ -41,6 +46,7 @@ impl VehicleFTContract {
         Self {
             owner_id,
             token,
+            nft_contract_id,
         }
     }
 
@@ -53,7 +59,7 @@ impl VehicleFTContract {
     #[private]
     pub fn burn_all_from(&mut self, account_id: AccountId) {
         require!(
-            env::predecessor_account_id() == self.owner_id,
+            env::predecessor_account_id() == self.nft_contract_id,
             "Only NFT contract can burn tokens"
         );
 
@@ -63,6 +69,7 @@ impl VehicleFTContract {
         self.token.internal_withdraw(&account_id, balance);
         self.token.total_supply -= balance;
     }
+
 }
 
 /* ---------------- FT CORE ---------------- */

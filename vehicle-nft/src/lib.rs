@@ -86,6 +86,7 @@ impl VehicleNFTContract {
     /// ===============================
     /// MINT VEHICLE NFT
     /// ===============================
+    #[payable]
     pub fn nft_mint_vehicle(
         &mut self,
         token_id: String,
@@ -143,6 +144,7 @@ impl VehicleNFTContract {
         claimant: AccountId,
         #[callback_result] balance: Result<U128, near_sdk::PromiseError>,
     ) -> bool {
+
         require!(!self.claimed, "Vehicle already claimed");
 
         let balance = balance.expect("Failed to get FT balance");
@@ -155,21 +157,45 @@ impl VehicleNFTContract {
         // 🔒 Lock state
         self.claimed = true;
 
-        // 🔥 Burn FT
+        // 🔥 Burn FT (async call)
         ext_ft::ext(self.ft_contract_id.clone())
             .with_static_gas(GAS_FOR_BURN)
             .with_attached_deposit(NearToken::from_yoctonear(0))
             .burn_all_from(claimant.clone());
 
-        env::log_str("✅ Vehicle successfully claimed");
+        // 🚗 Transfer NFT to claimant
+        let previous_owner = self.nft.owner_by_id.get(&token_id)
+            .expect("NFT does not exist");
+
+        self.nft.internal_transfer(
+            &previous_owner,
+            &claimant,
+            &token_id,
+            None,
+            None,
+        );
+
+        env::log_str("✅ Vehicle successfully claimed and NFT transferred");
+
         true
+    }
+
+    pub fn get_ft_contract_id(&self) -> AccountId {
+        self.ft_contract_id.clone()
+    }
+
+    pub fn get_ft_total_supply(&self) -> U128 {
+        self.ft_total_supply
+    }
+    pub fn is_claimed(&self) -> bool {
+        self.claimed
     }
 }
 
 /// ===============================
 /// NFT CORE (TRANSFERS DISABLED)
 /// ===============================
-
+#[near]
 impl NonFungibleTokenCore for VehicleNFTContract {
 
     fn nft_transfer(
