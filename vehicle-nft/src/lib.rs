@@ -50,6 +50,9 @@ pub struct VehicleNFTContract {
     pub ft_contract_id: AccountId,
     pub ft_total_supply: U128,
     pub claimed: bool,
+    pub maintenance: bool,
+    pub max_temperature: u64,
+    pub max_mileage: u64,
 }
 
 /// ===============================
@@ -80,6 +83,9 @@ impl VehicleNFTContract {
             ft_contract_id,
             ft_total_supply,
             claimed: false,
+            maintenance: false,
+            max_temperature: 110,
+            max_mileage: 200000,
         }
     }
 
@@ -120,6 +126,10 @@ impl VehicleNFTContract {
     /// ===============================
     pub fn claim_vehicle(&mut self, token_id: String) -> Promise {
         require!(!self.claimed, "Vehicle already claimed");
+        require!(
+            !self.maintenance,
+            "Vehicle cannot be claimed while in maintenance"
+        );
 
         let caller = env::predecessor_account_id();
 
@@ -153,7 +163,10 @@ impl VehicleNFTContract {
             balance == self.ft_total_supply,
             "Caller does not own 100% of the vehicle"
         );
-
+        require!(
+            !self.maintenance,
+            "Vehicle entered maintenance during claim process"
+        );
         // 🔒 Lock state
         self.claimed = true;
 
@@ -189,6 +202,28 @@ impl VehicleNFTContract {
     }
     pub fn is_claimed(&self) -> bool {
         self.claimed
+    }
+    pub fn submit_vehicle_data(
+        &mut self,
+        mileage: u64,
+        temperature: u64,
+    ) {
+        require!(
+            env::predecessor_account_id() == self.owner_id,
+            "Only authorized oracle can submit data"
+        );
+        // Simulación de validación
+        if mileage > self.max_mileage || temperature > self.max_temperature {
+            self.maintenance = true;
+            env::log_str("🚨 Vehicle requires maintenance");
+        } else {
+            self.maintenance = false;
+            env::log_str("✅ Vehicle operating normally");
+        }
+    }
+
+    pub fn is_in_maintenance(&self) -> bool {
+        self.maintenance
     }
 }
 

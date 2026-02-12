@@ -18,7 +18,7 @@ use near_contract_standards::fungible_token::metadata::{
 use near_contract_standards::storage_management::{
     StorageManagement, StorageBalance, StorageBalanceBounds,
 };
-
+use near_contract_standards::fungible_token::resolver::FungibleTokenResolver;
 #[near(contract_state)]
 #[derive(PanicOnDefault)]
 pub struct VehicleFTContract {
@@ -163,5 +163,18 @@ impl FungibleTokenMetadataProvider for VehicleFTContract {
             reference: None,
             reference_hash: None,
         }
+    }
+}
+
+#[near]
+impl FungibleTokenResolver for VehicleFTContract {
+    #[private]
+    fn ft_resolve_transfer(
+        &mut self,
+        sender_id: AccountId,
+        receiver_id: AccountId,
+        amount: U128,
+    ) -> U128 {
+        self.token.ft_resolve_transfer(sender_id, receiver_id, amount)
     }
 }
