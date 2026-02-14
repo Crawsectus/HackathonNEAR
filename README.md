@@ -49,7 +49,7 @@ cd HackathonNEAR
 Bash
 
 npm install
-
+```
 ### 3. Contract Configuration
 
 Check src/config.ts to verify the deployed Testnet addresses:
@@ -63,10 +63,10 @@ Check src/config.ts to verify the deployed Testnet addresses:
     USDT_CONTRACT: usdt-mock.testnet
 
 ### 4. Run Locally
-Bash
+```Bash
 
 npm run dev
-
+```
 ### Preview
 
 The interface features a dual-panel layout:
