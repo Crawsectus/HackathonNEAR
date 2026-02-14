@@ -51,7 +51,12 @@ impl Marketplace {
         require!(listed >= amount.0, "Not enough listed");
 
         self.listings.insert(&caller, &(listed - amount.0));
-
+        let new_balance = listed - amount.0;
+        if new_balance > 0 {
+            self.listings.insert(&caller, &new_balance);
+        } else {
+            self.listings.remove(&caller); // 🧹 Limpieza también al cancelar
+        }
         Promise::new(self.vehicle_ft.clone()).function_call(
             "ft_transfer".to_string(),
             near_sdk::serde_json::json!({
@@ -135,8 +140,15 @@ impl FungibleTokenReceiver for Marketplace {
             require!(amount.0 == required_payment, "Incorrect USDT amount");
 
             // actualizar estado antes de hacer promesas
-            self.listings.insert(&seller, &(available - shares));
+            let new_balance = available - shares;
 
+            // 2. Actualizamos o removemos según corresponda
+            if new_balance > 0 {
+                self.listings.insert(&seller, &new_balance);
+            } else {
+                self.listings.remove(&seller); // 🧹 Limpia el estado si ya no hay nada
+            }
+            
             // transferir USDT al seller
             Promise::new(self.usdt_token.clone())
                 .function_call(
