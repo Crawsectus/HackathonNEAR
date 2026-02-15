@@ -147,11 +147,13 @@ HelioX builds the foundation for physical infrastructure that can operate as pro
 ---
 
 ## How to Test the MVP
-
-1. Connect a NEAR testnet wallet  
-2. Deploy the contracts  
-3. Interact through the dApp  
-4. Execute tokenization and fractionalization methods  
+```
+1. Clone the repo and and install dependencies via npm install
+2. Run the app on dapp/heliox using npm run dev
+3. Connect a NEAR testnet wallet    
+4. Interact through the dApp  
+5. Execute tokenization and fractionalization methods
+```
 
 ---
 
