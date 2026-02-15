@@ -1,82 +1,180 @@
-# 🚀 Heliox: Real World Assets on NEAR
+# HelioX — Tokenized Mobility Infrastructure on NEAR
 
-**Heliox** is a sophisticated RWA (Real World Asset) tokenization platform designed to manage vehicle assets through **Dynamic NFTs** (NEP-171) and fractional ownership via **Fungible Tokens** (NEP-141). Developed for the **NearCon Innovation Sandbox**, this project demonstrates a full-cycle ecosystem for asset monitoring, fractional investment, and peer-to-peer trading.
+HelioX transforms real-world vehicles into programmable digital assets on NEAR Protocol, connecting physical mobility with on-chain economic logic.
 
-
-
-## 🛠️ Project Ecosystem
-
-The platform integrates three specialized smart contracts working in orchestration:
-
-1.  **Vehicle NFT (NEP-171):** Acts as the "Digital Twin" of the physical vehicle. It is a dynamic NFT that stores real-time telemetry (mileage and temperature). It features on-chain logic to trigger a "Maintenance Required" state if parameters exceed safety thresholds.
-2.  **Vehicle FT (NEP-141):** Represents fractional ownership (shares). This allows high-value assets to be divided among multiple liquidity providers.
-3.  **Marketplace Contract:** A specialized Escrow system that facilitates secure trading. It allows users to list shares and purchase them using **USDT** (6 decimals), ensuring atomic swaps between participants.
+Built for NEARCON Innovation Sandbox, HelioX demonstrates how Real World Assets (RWA) can integrate with smart contracts, oracles, and fractional ownership to create decentralized and scalable mobility infrastructure.
 
 ---
 
-## ✨ Key Features
+## The Problem
 
-* **Real-Time Status Dashboard:** Visual monitoring of vehicle health with dynamic UI indicators (Red/Green) based on blockchain-verified maintenance status.
-* **Oracle Simulator:** An integrated interface to push telemetry data (temperature/mileage) directly to the blockchain, simulating IoT sensor behavior.
-* **Advanced P2P Marketplace:**
-    * **Listing:** Securely move shares to escrow using `ft_transfer_call`.
-    * **Atomic Purchase:** Seamless exchange of USDT for shares in a single transaction flow.
-    * **Smart Cancellation:** Sellers can reclaim their listed shares. The contract utilizes state-cleaning logic (`remove`) to optimize storage costs.
-* **Optimized UX:** Automatic handling of token decimals, TGas allocation, and smart UI feedback for user-owned listings.
+Today vehicles remain:
 
+- Illiquid physical assets
+- Expensive and difficult to access
+- Controlled by centralized intermediaries
+- Disconnected from programmable economic systems
 
-
----
-
-## Technical Architecture (Rust)
-
-The smart contracts are built using the **NEAR Rust SDK**, prioritizing security and storage efficiency.
-
-### Core Logic:
-* **Dynamic Metadata:** The NFT contract updates its state based on external inputs, affecting the asset's "operativity" status on-chain.
-* **Fungible Token Receiver:** The Marketplace implements the `FungibleTokenReceiver` trait to react to incoming payments and listings without requiring separate approval transactions.
-* **Storage Management:** Implements efficient state cleanup by removing entries from `UnorderedMap` when balances reach zero, reducing the contract's storage footprint.
+Current mobility infrastructure limits economic participation and intelligent automation.
 
 ---
 
-## Getting Started
+## The Solution — What HelioX Delivers
 
-### 1. Clone the repository
-```bash
-git clone [https://github.com/Crawsectus/HackathonNEAR.git](https://github.com/Crawsectus/HackathonNEAR.git)
-cd HackathonNEAR
-2. Install dependencies
-Bash
+HelioX converts physical vehicles into on-chain economic infrastructure through:
 
-npm install
-```
-### 3. Contract Configuration
+1. NFT Tokenization (NEP-171)  
+   Each vehicle is represented as a unique NFT with dynamic metadata.
 
-Check src/config.ts to verify the deployed Testnet addresses:
+2. Fractional Ownership (NEP-141)  
+   The vehicle’s value is divided into fungible tokens, enabling accessible participation.
 
-    NFT_CONTRACT: heliox-nft.testnet
+3. Smart Contracts on NEAR  
+   Execute programmable economic logic and manage transfers, rules, and events.
 
-    FT_CONTRACT: heliox-ft.testnet
+4. Oracle Integration  
+   Physical vehicle data (simulated in the MVP) connects to on-chain decisions.
 
-    MARKET_CONTRACT: heliox-marketplace.testnet
+5. Decentralized Marketplace  
+   Enables secure and transparent trading of fractional participation.
 
-    USDT_CONTRACT: usdt-mock.testnet
+---
 
-### 4. Run Locally
-```Bash
+## MVP Architecture
 
-npm run dev
-```
-### Preview
+User Wallet  
+Frontend dApp (React / Next)  
+NEAR Smart Contracts:
+- NFT Contract (NEP-171)  
+- FT Contract (NEP-141)  
+- Marketplace Contract  
+- Oracle Integration  
+Oracle / IoT Simulation Layer  
 
-The interface features a dual-panel layout:
+---
 
-    Vehicle Monitor: Gauge-style tracking of mileage and temperature.
+## Mobility as a Service (MaaS)
 
-    Marketplace Orderbook: Clean, filtered list of available shares with distinct actions for buyers and sellers.
+HelioX lays the foundation for a decentralized Mobility as a Service (MaaS) model:
 
-### Project Information
+- Enables economic access without purchasing a full vehicle
+- Facilitates collective participation in physical infrastructure
+- Automates economic decisions through on-chain rules
+- Reduces dependence on centralized intermediaries
 
-    Event: NearCon Innovation Sandbox
+HelioX is not traditional renting — it is programmable infrastructure for decentralized mobility.
 
-    Network: NEAR Testnet
+---
+
+## Real World Assets (RWA)
+
+Each vehicle in HelioX is treated as a Real World Asset (RWA):
+
+- Verifiable digital identity
+- Programmable fractional ownership
+- Connection between physical data and blockchain decisions
+- Full transparency in economic management
+
+This turns physical assets into interoperable components of the Web3 ecosystem.
+
+---
+
+## Scalability — Designed for Growth
+
+HelioX is designed to scale in three dimensions:
+
+### Transactional Scalability
+
+NEAR uses Nightshade (sharding), enabling:
+
+- Parallel transaction processing
+- Support for thousands of vehicles
+- Handling millions of microtransactions
+- Low and predictable costs
+
+### Economic Scalability
+
+Fractional ownership enables:
+
+- Participation from low capital amounts
+- Programmable revenue distribution
+- Expanded access to physical assets
+
+### Data Scalability
+
+Each vehicle acts as a data node:
+
+- Future integration with real IoT devices
+- Distributed operational dataset
+- Foundation for intelligent automation and predictive maintenance
+
+---
+
+## What Is Already Implemented
+
+- Dynamic NFTs (NEP-171)  
+- Fractional fungible tokens (NEP-141)  
+- Smart contracts deployed on testnet  
+- Functional marketplace  
+- Oracle integration (simulated)  
+- Wallet-connected dApp  
+
+HelioX is already operating on NEAR testnet executing real economic logic.
+
+---
+
+## Roadmap
+
+Phase 1 — Tokenization and fractionalization (Current MVP)  
+Phase 2 — Rule-based on-chain automation  
+Phase 3 — Autonomous agent integration  
+Phase 4 — NEAR Intents integration  
+Phase 5 — Advanced intelligent mobility infrastructure  
+
+---
+
+## Future Evolution — Autonomous Agents
+
+The current architecture allows evolution toward:
+
+- Autonomous agents executing economic decisions
+- Event-triggered execution from real physical data
+- Simplified user experience through NEAR Intents
+- Semi-autonomous fleet management systems
+
+HelioX builds the foundation for physical infrastructure that can operate as programmable economic entities.
+
+---
+
+## How to Test the MVP
+
+1. Connect a NEAR testnet wallet  
+2. Deploy the contracts  
+3. Interact through the dApp  
+4. Execute tokenization and fractionalization methods  
+
+---
+
+## Repository Structure
+
+vehicle-nft/  
+vehicle-ft/  
+marketplace/  
+frontend/  
+README.md  
+
+---
+
+## Built for NEARCON Innovation Sandbox
+
+HelioX demonstrates how NEAR Protocol can connect:
+
+- Physical assets
+- Smart contracts
+- Fractional ownership
+- Real-world data
+- Scalable infrastructure
+
+Real mobility.  
+On-chain economy.  
+Programmable infrastructure.
