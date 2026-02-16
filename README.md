@@ -1,182 +1,107 @@
-# HelioX — Tokenized Mobility Infrastructure on NEAR
+HelioX — Tokenized Mobility Infrastructure & Agentic Intents on NEAR
 
-HelioX transforms real-world vehicles into programmable digital assets on NEAR Protocol, connecting physical mobility with on-chain economic logic.
+HelioX transforms real-world vehicles into programmable digital assets on NEAR Protocol, connecting physical mobility with on-chain economic logic through Autonomous Intent Abstraction.
 
-Built for NEARCON Innovation Sandbox, HelioX demonstrates how Real World Assets (RWA) can integrate with smart contracts, oracles, and fractional ownership to create decentralized and scalable mobility infrastructure.
+Built for NEARCON Innovation Sandbox, HelioX demonstrates the convergence of Real World Assets (RWA), IoT Oracles, and Agentic UX to create the next generation of decentralized mobility infrastructure.
+🤖 The HelioX Smart Agent: Intent-Based Mobility
 
----
+Beyond a traditional marketplace, HelioX introduces an Agentic Intent Layer. This abstraction allows users to interact with complex RWA smart contracts using natural language commands, effectively removing the friction of manual on-chain interactions.
+Features of the HelioX Agent:
 
-## The Problem
+    Semantic Intent Parsing: Locally processes user desires (buy, sell, optimize) without exposing sensitive data to external LLM APIs.
+
+    Liquidity Discovery Agent: Automatically scans the order book to find the optimal match for user requests, abstracting the "Search & Match" complexity.
+
+    Guardrail Logic: Built-in safety protocols prevent self-trading and invalid state execution, acting as an intelligent middleware between the user and the blockchain.
+
+    Chain Abstraction Enabler: Moves the user experience from "Clicking Buttons" to "Declaring Intentions," aligning with the NEAR core vision of frictionless Web3.
+
+The Problem
 
 Today vehicles remain:
 
-- Illiquid physical assets
-- Expensive and difficult to access
-- Controlled by centralized intermediaries
-- Disconnected from programmable economic systems
+    Illiquid physical assets with high entry barriers.
 
-Current mobility infrastructure limits economic participation and intelligent automation.
+    Disconnected Data Silos: IoT data is wasted instead of driving economic value.
 
----
+    Complex On-chain UX: Managing RWA fractions, Escrow, and Oracles is daunting for non-technical users.
 
-## The Solution — What HelioX Delivers
+The Solution — What HelioX Delivers
 
 HelioX converts physical vehicles into on-chain economic infrastructure through:
 
-1. NFT Tokenization (NEP-171)  
-   Each vehicle is represented as a unique NFT with dynamic metadata.
+    NFT Tokenization (NEP-171) Each vehicle is a unique NFT with Dynamic Metadata that reacts to real-world usage.
 
-2. Fractional Ownership (NEP-141)  
-   The vehicle’s value is divided into fungible tokens, enabling accessible participation.
+    Fractional Ownership (NEP-141) The vehicle’s value is divided into fungible tokens, enabling hyper-accessible participation.
 
-3. Smart Contracts on NEAR  
-   Execute programmable economic logic and manage transfers, rules, and events.
+    Autonomous Marketplace Agent An intent-based interface that handles order matching and execution through natural language.
 
-4. Oracle Integration  
-   Physical vehicle data (simulated in the MVP) connects to on-chain decisions.
+    Oracle-Driven State Machine Physical data (Mileage, Temperature) triggers on-chain events like Automatic Maintenance Lockdowns.
 
-5. Decentralized Marketplace  
-   Enables secure and transparent trading of fractional participation.
+MVP Architecture
 
----
+    Frontend: React / Next.js with Agentic UX Design.
 
-## MVP Architecture
+    Agent Layer: Client-side NLP Intent Parser for high-speed, private execution.
 
-User Wallet  
-Frontend dApp (React / Next)  
-NEAR Smart Contracts:
-- NFT Contract (NEP-171)  
-- FT Contract (NEP-141)  
-- Marketplace Contract  
-- Oracle Integration  
-Oracle / IoT Simulation Layer  
+    Smart Contracts (Rust):
 
----
+        NFT Contract (NEP-171): Manages asset identity and maintenance states.
 
-## Mobility as a Service (MaaS)
+        FT Contract (NEP-141): Manages fractional ownership.
 
-HelioX lays the foundation for a decentralized Mobility as a Service (MaaS) model:
+        Marketplace Contract: Handles atomic swaps and Escrow.
 
-- Enables economic access without purchasing a full vehicle
-- Facilitates collective participation in physical infrastructure
-- Automates economic decisions through on-chain rules
-- Reduces dependence on centralized intermediaries
+    IoT Simulation Layer: Real-time data injection to test Oracle responsiveness.
 
-HelioX is not traditional renting — it is programmable infrastructure for decentralized mobility.
+Real World Assets (RWA) & IoT
 
----
+Each vehicle in HelioX is treated as a Live Asset:
 
-## Real World Assets (RWA)
+    Verifiable Digital Identity: On-chain record of the vehicle's history.
 
-Each vehicle in HelioX is treated as a Real World Asset (RWA):
+    Predictive Maintenance: Oracle data can trigger maintenance states, protecting share value by pausing trades when the asset is at risk.
 
-- Verifiable digital identity
-- Programmable fractional ownership
-- Connection between physical data and blockchain decisions
-- Full transparency in economic management
+    Transparency: Every kilometer traveled is recorded on the NEAR blockchain.
 
-This turns physical assets into interoperable components of the Web3 ecosystem.
+Scalability — Designed for Growth
+Transactional & Economic Scalability
 
----
+Leveraging NEAR’s Nightshade Sharding, HelioX can manage entire fleets of autonomous vehicles, processing micro-transactions for mileage and maintenance in parallel with near-zero costs.
+Agentic Scalability
 
-## Scalability — Designed for Growth
+As the HelioX Agent evolves, it will integrate with NEAR Intents (Solver Network), allowing it to swap assets across different shards and protocols to fulfill user requests in the most efficient way possible.
+What Is Already Implemented
 
-HelioX is designed to scale in three dimensions:
+    ✅ Agentic UI: Natural language command bar for market interaction.
 
-### Transactional Scalability
+    ✅ Dynamic NFTs: Metadata that reflects vehicle health.
 
-NEAR uses Nightshade (sharding), enabling:
+    ✅ Fractional Marketplace: Secure Escrow for NEP-141 shares.
 
-- Parallel transaction processing
-- Support for thousands of vehicles
-- Handling millions of microtransactions
-- Low and predictable costs
+    ✅ Oracle Integration: Functional sensor data submission and validation.
 
-### Economic Scalability
+    ✅ Dark Mode Pro: Optimized for high-stakes innovation environments.
 
-Fractional ownership enables:
+Roadmap
 
-- Participation from low capital amounts
-- Programmable revenue distribution
-- Expanded access to physical assets
+    Phase 1: RWA Tokenization & Fractionalization (Current MVP).
 
-### Data Scalability
+    Phase 2: Autonomous Agent Expansion (Moving logic from client-side to NEAR Solver Nodes).
 
-Each vehicle acts as a data node:
+    Phase 3: Integration with real IoT hardware (OBD-II Dongles).
 
-- Future integration with real IoT devices
-- Distributed operational dataset
-- Foundation for intelligent automation and predictive maintenance
+    Phase 4: Cross-chain RWA liquidity via NEAR Chain Abstraction.
 
----
+How to Test the MVP
 
-## What Is Already Implemented
 
-- Dynamic NFTs (NEP-171)  
-- Fractional fungible tokens (NEP-141)  
-- Smart contracts deployed on testnet  
-- Functional marketplace  
-- Oracle integration (simulated)  
-- Wallet-connected dApp  
+1. Clone the repo: git clone https://github.com/Crawsectus/HackathonNEAR
+2. Navigate to the dApp: cd dapp/heliox
+3. Install & Run: npm install && npm run dev
+4. Connect Wallet: Use a NEAR Testnet account.
+5. Command the Agent: Type "Buy 5" or "Sell 10" in the AI Hub.
 
-HelioX is already operating on NEAR testnet executing real economic logic.
+Built for NEARCON Innovation Sandbox
 
----
-
-## Roadmap
-
-Phase 1 — Tokenization and fractionalization (Current MVP)  
-Phase 2 — Rule-based on-chain automation  
-Phase 3 — Autonomous agent integration  
-Phase 4 — NEAR Intents integration  
-Phase 5 — Advanced intelligent mobility infrastructure  
-
----
-
-## Future Evolution — Autonomous Agents
-
-The current architecture allows evolution toward:
-
-- Autonomous agents executing economic decisions
-- Event-triggered execution from real physical data
-- Simplified user experience through NEAR Intents
-- Semi-autonomous fleet management systems
-
-HelioX builds the foundation for physical infrastructure that can operate as programmable economic entities.
-
----
-
-## How to Test the MVP
-```
-1. Clone the repo and and install dependencies via npm install
-2. Run the app on dapp/heliox using npm run dev
-3. Connect a NEAR testnet wallet    
-4. Interact through the dApp  
-5. Execute tokenization and fractionalization methods
-```
-
----
-
-## Repository Structure
-
-vehicle-nft/  
-vehicle-ft/  
-marketplace/  
-frontend/  
-README.md  
-
----
-
-## Built for NEARCON Innovation Sandbox
-
-HelioX demonstrates how NEAR Protocol can connect:
-
-- Physical assets
-- Smart contracts
-- Fractional ownership
-- Real-world data
-- Scalable infrastructure
-
-Real mobility.  
-On-chain economy.  
-Programmable infrastructure.
+Real mobility. On-chain economy. Agentic execution. HelioX is building the foundation for physical infrastructure that operates as a programmable, autonomous economic entity.
