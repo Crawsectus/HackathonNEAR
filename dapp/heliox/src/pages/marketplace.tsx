@@ -1,21 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNearWallet } from 'near-connect-hooks';
 import { MARKET_CONTRACT, FT_CONTRACT, USDT_CONTRACT } from '@/config';
+import styles from '@/styles/app.module.css';
 
 export default function MarketplacePage() {
     const { signedAccountId, viewFunction, callFunction } = useNearWallet() as any;
     const [listings, setListings] = useState<any[]>([]);
-    const [rawPrice, setRawPrice] = useState('0'); // El valor del contrato (1000000)
+    const [rawPrice, setRawPrice] = useState('0');
     const [amountToList, setAmountToList] = useState('');
+    const [aiInput, setAiInput] = useState('');
+    const [agentStatus, setAgentStatus] = useState('Ready to assist. Try: "buy 5" or "list 10"');
+    const [isProcessing, setIsProcessing] = useState(false);
 
-    // Configuración de decimales
     const USDT_DECIMALS = 6;
 
-    // Función para convertir de Contrato -> Humano (1000000 -> 1.00)
-    const toHuman = (amount: string | number) => (Number(amount) / Math.pow(10, USDT_DECIMALS)).toFixed(2);
-
-    // Función para convertir de Humano -> Contrato (1 -> 1000000)
-    const toContract = (amount: string | number) => (BigInt(amount) * BigInt(Math.pow(10, USDT_DECIMALS))).toString();
+    // FIX: Función toHuman que acepta bigint, string o number de forma segura
+    const toHuman = (amount: string | number | bigint) => {
+        const amountNumber = typeof amount === 'bigint' ? Number(amount) : Number(amount);
+        return (amountNumber / Math.pow(10, USDT_DECIMALS)).toFixed(2);
+    };
 
     useEffect(() => {
         const loadMarketData = async () => {
@@ -26,129 +29,183 @@ export default function MarketplacePage() {
                 ]);
                 setListings(allListings);
                 setRawPrice(pricePerShare);
-            } catch (e) { console.error("Error cargando mercado:", e); }
+            } catch (e) { console.error("Error loading market:", e); }
         };
         loadMarketData();
     }, [viewFunction]);
 
-    const handleListShares = async () => {
-        if (!amountToList) return alert("Ingresa una cantidad");
+    const handleListShares = async (amount?: string) => {
+        const finalAmount = amount || amountToList;
+        if (!finalAmount) return alert("Please specify an amount");
+
         await callFunction({
             contractId: FT_CONTRACT,
             method: 'ft_transfer_call',
-            args: {
-                receiver_id: MARKET_CONTRACT,
-                amount: amountToList, // Las shares suelen tener 0 o 18 decimales, revisa tu FT
-                msg: "list"
-            },
+            args: { receiver_id: MARKET_CONTRACT, amount: finalAmount, msg: "list" },
             gas: "30000000000000",
             deposit: "1"
         });
     };
-    const handleCancelListing = async (amount: string) => {
-        try {
-            await callFunction({
-                contractId: MARKET_CONTRACT,
-                method: 'cancel_listing',
-                args: {
-                    amount: amount // El contrato espera U128 (enviamos el string crudo)
-                },
-                gas: "100000000000000", // 100 TGas es suficiente para un transfer
-            });
-            alert("Listing cancelado. Tus shares han vuelto a tu billetera.");
-            window.location.reload();
-        } catch (err) {
-            console.error("Error al cancelar:", err);
-        }
-    };
-    const handleBuyShares = async (seller: string, shares: string) => {
-        const totalCost = (BigInt(shares) * BigInt(rawPrice)).toString();
 
-        try {
-            await callFunction({
-                contractId: USDT_CONTRACT,
-                method: 'ft_transfer_call',
-                args: {
-                    receiver_id: MARKET_CONTRACT,
-                    amount: totalCost,
-                    msg: JSON.stringify({ seller, shares })
-                },
-                // Prueba aumentando el gas y asegurándote de que sea un string
-                gas: "200000000000000", // 200 TGas
-                deposit: "1" // 1 yoctoNEAR
-            });
-        } catch (err) {
-            console.error("Error al llamar a la función:", err);
-        }
+    const handleCancelListing = async (amount: string) => {
+        await callFunction({
+            contractId: MARKET_CONTRACT,
+            method: 'cancel_listing',
+            args: { amount: amount },
+            gas: "100000000000000",
+        });
     };
+
+    const handleBuyShares = async (seller: string, shares: string) => {
+        // FIX: Cálculo de BigInt convertido a String para el contrato
+        const totalCost = (BigInt(shares) * BigInt(rawPrice)).toString();
+        await callFunction({
+            contractId: USDT_CONTRACT,
+            method: 'ft_transfer_call',
+            args: {
+                receiver_id: MARKET_CONTRACT,
+                amount: totalCost,
+                msg: JSON.stringify({ seller, shares })
+            },
+            gas: "200000000000000",
+            deposit: "1"
+        });
+    };
+
+    const handleAiAgent = async () => {
+        const input = aiInput.toLowerCase().trim();
+        if (!input) return;
+
+        setIsProcessing(true);
+        setAgentStatus("🧠 Analyzing intent and blockchain state...");
+
+        setTimeout(async () => {
+            try {
+                if (input.includes('sell') || input.includes('vender') || input.includes('list')) {
+                    const amount = input.match(/\d+/)?.[0];
+                    if (!amount) throw new Error("Amount not detected.");
+                    setAgentStatus(`🤖 Intent: List ${amount} shares...`);
+                    await handleListShares(amount);
+                }
+                else if (input.includes('buy') || input.includes('comprar')) {
+                    const amount = input.match(/\d+/)?.[0] || "1";
+                    // 1. Filtrar listings: Que tengan stock Y que NO sean del usuario actual
+                    console.log(signedAccountId);
+                    const validOffers = listings.filter(([seller, vol]) =>
+                        seller !== signedAccountId && BigInt(vol) >= BigInt(amount)
+                    );
+
+                    // 2. Si no hay listings en general
+                    if (listings.length === 0) {
+                        throw new Error("The market is currently empty. No listings available.");
+                    }
+
+                    // 3. Si hay listings pero todos son del usuario
+                    if (validOffers.length === 0) {
+                        const isSelfListing = listings.some(([seller]) => seller === signedAccountId);
+                        if (isSelfListing) {
+                            throw new Error("You already own the available shares. You cannot buy from yourself!");
+                        } else {
+                            throw new Error(`No seller has ${amount} shares available right now.`);
+                        }
+                    }
+
+                    // 4. Seleccionar la mejor (la primera que cumpla, o podrías sortear por precio si variara)
+                    const bestOffer = validOffers[0];
+
+                    setAgentStatus(`🤖 Optimal match found! Buying ${amount} from ${bestOffer[0].substring(0, 6)}...`);
+                    await handleBuyShares(bestOffer[0], amount);
+                }
+                else if (input.includes('cancel') || input.includes('cancelar')) {
+                    const myListing = listings.find(([seller]) => seller === signedAccountId);
+                    if (!myListing) throw new Error("No active listings found.");
+                    setAgentStatus(`🤖 Terminating listing...`);
+                    await handleCancelListing(myListing[1]);
+                }
+                else {
+                    setAgentStatus("❓ Intent unclear. Try 'Buy 10' or 'Sell 5'.");
+                }
+            } catch (err: any) {
+                setAgentStatus(`❌ Agent Error: ${err.message}`);
+            } finally {
+                setIsProcessing(false);
+            }
+        }, 800);
+    };
+
     return (
-        <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-            <header style={{ borderBottom: '2px solid #eee', marginBottom: '30px', paddingBottom: '10px' }}>
-                <h1>HelioX marketplace</h1>
-                <p style={{ fontSize: '1.1rem', color: '#555' }}>
-                    Share price: <strong style={{ color: '#0070f3' }}>{toHuman(rawPrice)} USDT</strong>
-                </p>
+        <div className={styles.main}>
+            <header style={{ textAlign: 'center', marginBottom: '40px' }}>
+                <h1 className={styles.agentInsight}>HelioX Agentic Market</h1>
+                <p style={{ opacity: 0.8 }}>Asset Price: <strong>{toHuman(rawPrice)} USDT / Share</strong></p>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
+            {/* --- AGENT COMMAND CENTER --- */}
+            <div className={styles.card} style={{ marginBottom: '30px', border: '1px solid #00ec9c', width: '100%', maxWidth: '1100px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{ fontSize: '2rem' }}>🤖</div>
+                    <div style={{ flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#00ec9c' }}>AGENT ONLINE</p>
+                        <input
+                            className={styles.input}
+                            style={{ margin: 0, border: 'none', background: 'transparent', fontSize: '1.2rem', padding: '5px 0', outline: 'none' }}
+                            placeholder="Tell the agent what to do..."
+                            value={aiInput}
+                            onChange={(e) => setAiInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAiAgent()}
+                        />
+                        <p style={{ margin: 0, fontSize: '0.85rem', opacity: 0.6 }}>{agentStatus}</p>
+                    </div>
+                    <button onClick={handleAiAgent} className="btn btn-success" disabled={isProcessing}>Execute</button>
+                </div>
+            </div>
 
-                {/* LADO IZQUIERDO: Panel de Venta */}
-                <div style={{ background: '#f4f7f6', padding: '20px', borderRadius: '15px', height: 'fit-content' }}>
-                    <h3 style={{ marginTop: 0 }}>Sell my shares</h3>
-                    <p style={{ fontSize: '0.8rem', color: '#666' }}>Your shares will be sent to the custody contract (Escrow).</p>
+            <div className={styles.grid}>
+                {/* Panel Tradicional */}
+                <div className={styles.card}>
+                    <h3>Manual Listing</h3>
                     <input
                         type="number"
-                        placeholder="Quantity (eg. 10)"
+                        className={styles.input}
+                        placeholder="Quantity"
+                        value={amountToList}
                         onChange={(e) => setAmountToList(e.target.value)}
-                        style={{ width: '90%', padding: '12px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
                     />
-                    <button onClick={handleListShares} style={{ width: '100%', background: '#0070f3', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        Sell
-                    </button>
+                    <button onClick={() => handleListShares()} className="btn btn-outline-primary" style={{ width: '100%' }}>List Shares</button>
                 </div>
 
-                {/* LADO DERECHO: Tabla de Ofertas */}
-                <div>
-                    <h3>Available offers</h3>
-                    <div style={{ background: 'white', border: '1px solid #eee', borderRadius: '10px', overflow: 'hidden' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead style={{ background: '#fafafa' }}>
+                {/* Tabla de Ofertas */}
+                <div className={styles.card}>
+                    <div className={styles.tableContainer}>
+                        <table className={styles.table}>
+                            <thead>
                                 <tr>
-                                    <th style={tableHeaderStyle}>Seller</th>
-                                    <th style={tableHeaderStyle}>Quantity</th>
-                                    <th style={tableHeaderStyle}>Total cost</th>
-                                    <th style={tableHeaderStyle}>Action</th>
+                                    <th>Seller</th>
+                                    <th>Qty</th>
+                                    <th>Cost</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {listings.length > 0 ? listings.map(([seller, amount]) => {
-                                    const totalCost = BigInt(amount) * BigInt(rawPrice);
+                                {listings.map(([seller, amount]) => {
+                                    // FIX: Cálculo seguro de total cost para pasar a toHuman
+                                    const totalCostBI = BigInt(amount) * BigInt(rawPrice);
                                     return (
-                                        <tr key={seller} style={{ borderBottom: '1px solid #eee' }}>
-                                            <td style={tableCellStyle}>{seller.substring(0, 15)}...</td>
-                                            <td style={tableCellStyle}><strong>{amount}</strong></td>
-                                            <td style={tableCellStyle}>{toHuman(totalCost.toString())} USDT</td>
-                                            <td style={tableCellStyle}>
+                                        <tr key={seller}>
+                                            <td>{seller.substring(0, 10)}...</td>
+                                            <td><strong>{amount}</strong></td>
+                                            <td>{toHuman(totalCostBI)} USDT</td>
+                                            <td>
                                                 <button
                                                     onClick={() => seller === signedAccountId ? handleCancelListing(amount) : handleBuyShares(seller, amount)}
-                                                    style={{
-                                                        background: seller === signedAccountId ? '#ff4d4f' : '#00ec9c',
-                                                        color: seller === signedAccountId ? '#fff' : '#000',
-                                                        padding: '8px 12px',
-                                                        border: 'none',
-                                                        borderRadius: '6px',
-                                                        fontWeight: '600',
-                                                        cursor: 'pointer'
-                                                    }}
+                                                    className={`btn ${seller === signedAccountId ? 'btn-danger' : 'btn-success'}`}
                                                 >
                                                     {seller === signedAccountId ? 'Cancel' : 'Buy'}
                                                 </button>
                                             </td>
                                         </tr>
                                     );
-                                }) : (
-                                    <tr><td colSpan={4} style={{ padding: '20px', textAlign: 'center' }}>No hay ventas activas</td></tr>
-                                )}
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -157,7 +214,3 @@ export default function MarketplacePage() {
         </div>
     );
 }
-
-// Estilos rápidos para la tabla
-const tableHeaderStyle: React.CSSProperties = { padding: '15px', textAlign: 'left', fontSize: '0.9rem', color: '#888' };
-const tableCellStyle: React.CSSProperties = { padding: '15px', fontSize: '0.95rem' };

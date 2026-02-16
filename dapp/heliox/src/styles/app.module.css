@@ -1,0 +1,115 @@
+/* CONTENEDOR PRINCIPAL */
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+  /* Gradiente de fondo que funciona en ambos modos */
+  background: radial-gradient(circle at top right, #f9fafb, #ffffff);
+  color: #111827;
+}
+
+/* GRID Y LAYOUT */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1100px;
+  z-index: 2;
+}
+
+/* CARDS CON GLASSMORPHISM */
+.card {
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  transition: transform 0.2s ease;
+}
+
+/* TABLA DINÁMICA */
+.tableContainer {
+  overflow-x: auto;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  color: inherit;
+}
+
+.table th {
+  padding: 12px;
+  text-align: left;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #6b7280;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.table td {
+  padding: 16px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* INPUTS Y BOTONES */
+.input {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: white;
+  color: #111827;
+}
+
+/* =============================================
+   MODO OSCURO (FORZADO POR MEDIA QUERY)
+   ============================================= */
+@media (prefers-color-scheme: dark) {
+  .main {
+    background: radial-gradient(circle at top right, #030712, #000000);
+    color: #f3f4f6;
+  }
+
+  .card {
+    background: rgba(17, 24, 39, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  }
+
+  .card h1, .card h2, .card h3, .card p, .card strong, .card td {
+    color: #ffffff !important;
+  }
+
+  .table th {
+    color: #9ca3af;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .table td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white !important;
+  }
+
+  .input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+/* ANIMACIONES */
+.card:hover {
+  transform: translateY(-4px);
+}

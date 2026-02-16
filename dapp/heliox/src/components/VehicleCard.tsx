@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNearWallet } from 'near-connect-hooks';
 import { FT_CONTRACT, NFT_CONTRACT } from '@/config';
+import styles from '@/styles/app.module.css'; // Asegúrate de tener este import
 
 interface VehicleCardProps {
   tokenId: string;
@@ -16,7 +17,7 @@ export function VehicleCard({ tokenId }: VehicleCardProps) {
     balance: '0',
     totalSupply: '0',
     metadata: null as any,
-    inMaintenance: false, // <-- NUEVO ESTADO
+    inMaintenance: false,
     loading: true
   });
 
@@ -29,14 +30,14 @@ export function VehicleCard({ tokenId }: VehicleCardProps) {
           viewFunction({ contractId: FT_CONTRACT, method: 'ft_balance_of', args: { account_id: signedAccountId } }),
           viewFunction({ contractId: NFT_CONTRACT, method: 'get_ft_total_supply', args: {} }),
           viewFunction({ contractId: NFT_CONTRACT, method: 'nft_token', args: { token_id: tokenId } }),
-          viewFunction({ contractId: NFT_CONTRACT, method: 'is_in_maintenance', args: {} }) // <-- CONSULTA DE MANTENIMIENTO
+          viewFunction({ contractId: NFT_CONTRACT, method: 'is_in_maintenance', args: {} })
         ]);
 
         setData({
           balance: rawBalance,
           totalSupply: totalSupply,
           metadata: nftInfo?.metadata,
-          inMaintenance: maintenance, // <-- GUARDAMOS EL ESTADO
+          inMaintenance: maintenance,
           loading: false
         });
       } catch (err) {
@@ -46,9 +47,8 @@ export function VehicleCard({ tokenId }: VehicleCardProps) {
     loadVehicleInfo();
   }, [signedAccountId, tokenId, viewFunction]);
 
-  // 2. LA FUNCIÓN DE ENVÍO
   const handleUpdateData = async () => {
-    if (!callFunction) return alert("Error: Wallet no conectada correctamente");
+    if (!callFunction) return alert("Error: Wallet not connected");
 
     setSending(true);
     try {
@@ -60,114 +60,92 @@ export function VehicleCard({ tokenId }: VehicleCardProps) {
           temperature: Number(temperature)
         }
       });
-      alert("¡Datos enviados con éxito! La blockchain está validando...");
+      alert("Success! Blockchain updated.");
       window.location.reload();
     } catch (err) {
-      console.error("Error al enviar datos:", err);
-      alert("Error: Probablemente no eres el owner del contrato.");
+      console.error("Error:", err);
+      alert("Error: Ensure you are the contract owner.");
     } finally {
       setSending(false);
     }
   };
 
-  if (data.loading) return <div>Loading vehilce info...</div>;
+  if (data.loading) return <div className={styles.card}>Loading vehicle info...</div>;
 
   const percent = (Number(data.balance) / Number(data.totalSupply)) * 100;
 
-  if (data.loading) return <div>Loading...</div>;
-
   return (
-<div style={{ border: '1px solid #ccc', borderRadius: '12px', padding: '20px', margin: '10px 0', backgroundColor: '#fff' }}>
+    <div className={styles.card}>
       
-      {/* TÍTULO CON INDICADOR DE MANTENIMIENTO */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <h3 style={{ margin: 0 }}>{data.metadata?.title || "Vehículo"}</h3>
+      {/* TÍTULO Y ESTADO */}
+      <div className={styles.center} style={{ padding: 0, justifyContent: 'space-between' }}>
+        <h3 className={styles.agentInsight} style={{ margin: 0 }}>
+          {data.metadata?.title || "Asset Details"}
+        </h3>
         
-        {data.inMaintenance ? (
-          <span style={{
-            backgroundColor: '#ff4d4f',
-            color: 'white',
-            padding: '4px 10px',
-            borderRadius: '20px',
-            fontSize: '0.7rem',
-            fontWeight: 'bold',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '5px'
-          }}>
-            <span style={{ width: '8px', height: '8px', backgroundColor: 'white', borderRadius: '50%', display: 'inline-block' }}></span>
-            MAINTENANCE
-          </span>
-        ) : (
-          <span style={{
-            backgroundColor: '#52c41a',
-            color: 'white',
-            padding: '4px 10px',
-            borderRadius: '20px',
-            fontSize: '0.7rem',
-            fontWeight: 'bold'
-          }}>
-            ✅ NORMAL
-          </span>
-        )}
-      </div>
-      {data.inMaintenance && (
-        <div style={{ marginTop: '10px', color: '#cf1322', fontSize: '0.8rem', fontWeight: '500' }}>
-          ⚠️ Maintenance required.
+        <div className={data.inMaintenance ? styles.statusBadgeError : styles.statusBadgeSuccess}>
+          {data.inMaintenance ? '⚠️ MAINTENANCE' : '✅ OPERATIONAL'}
         </div>
+      </div>
+
+      {data.inMaintenance && (
+        <p style={{ color: '#ff4d4f', fontSize: '0.85rem', fontWeight: 'bold', marginTop: '10px' }}>
+          Maintenance Protocol Active: Asset partially restricted.
+        </p>
       )}
 
-      <div style={{ background: '#f4f4f4', padding: '15px', borderRadius: '8px' }}>
-        <h4>Your participation</h4>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem' }}>
-          <span><strong>{data.balance}</strong> Shares</span>
-          <span style={{ color: '#0070f3' }}>{percent.toFixed(2)}% total</span>
+      {/* PARTICIPACIÓN */}
+      <div className={styles.tableContainer} style={{ marginTop: '20px', padding: '15px' }}>
+        <h4 style={{ marginTop: 0 }}>Ownership Share</h4>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+          <span style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{data.balance}</span>
+          <span className={styles.agentInsight}>{percent.toFixed(2)}% of total</span>
         </div>
 
-        <div style={{ width: '100%', height: '10px', backgroundColor: '#ddd', borderRadius: '5px', marginTop: '10px', overflow: 'hidden' }}>
-          <div style={{ width: `${percent}%`, background: '#00ec9c', height: '100%' }}></div>
+        {/* Barra de progreso */}
+        <div style={{ width: '100%', height: '8px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '10px', marginTop: '10px', overflow: 'hidden' }}>
+          <div style={{ width: `${percent}%`, background: 'var(--near-green)', height: '100%', transition: 'width 1s ease' }}></div>
         </div>
       </div>
 
-      {/* 3. BLOQUE DEL SIMULADOR DE DATOS */}
-      <div style={{ marginTop: '20px', padding: '15px', border: '1px dashed #00ec9c', borderRadius: '8px' }}>
-        <h5 style={{ marginTop: 0 }}>Test oracle: Send sensor data</h5>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+      {/* SIMULADOR DE ORÁCULO */}
+      <div className={styles.card} style={{ marginTop: '20px', borderStyle: 'dashed', background: 'rgba(0,0,0,0.1)' }}>
+        <h5 style={{ marginTop: 0 }}>Simulate Hardware Oracle</h5>
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
           <input
             type="number"
+            className={styles.input}
             placeholder="Mileage"
-            style={{ flex: 1, padding: '8px' }}
             onChange={(e) => setMileage(Number(e.target.value))}
           />
           <input
             type="number"
+            className={styles.input}
             placeholder="Temp °C"
-            style={{ flex: 1, padding: '8px' }}
             onChange={(e) => setTemperature(Number(e.target.value))}
           />
         </div>
         <button
           onClick={handleUpdateData}
           disabled={sending}
-          style={{
-            width: '100%',
-            padding: '10px',
-            backgroundColor: '#000',
-            color: '#fff',
-            borderRadius: '6px',
-            cursor: sending ? 'not-allowed' : 'pointer'
-          }}
+          className="btn btn-primary"
+          style={{ width: '100%' }}
         >
-          {sending ? 'Enviando a Blockchain...' : 'Update status'}
+          {sending ? 'Pushing to NEAR...' : 'Update Vehicle Status'}
         </button>
       </div>
 
-      <p style={{ fontSize: '0.8rem', marginTop: '15px' }}>
-        ID: {tokenId} |
-        <a href={`https://ipfs.io/ipfs/${data.metadata?.extra}`} target="_blank" rel="noreferrer" style={{ marginLeft: '5px' }}>
-          View legal document on IPFS
+      <div style={{ marginTop: '20px', fontSize: '0.75rem', opacity: 0.6, display: 'flex', justifyContent: 'space-between' }}>
+        <span>ID: {tokenId}</span>
+        <a 
+          href={`https://ipfs.io/ipfs/${data.metadata?.extra}`} 
+          target="_blank" 
+          rel="noreferrer" 
+          style={{ color: 'var(--near-green)', textDecoration: 'underline' }}
+        >
+          View Legal Documents
         </a>
-      </p>
+      </div>
     </div>
   );
 }
