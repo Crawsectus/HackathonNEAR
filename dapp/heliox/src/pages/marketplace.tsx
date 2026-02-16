@@ -100,7 +100,7 @@ export default function MarketplacePage() {
                         type="number"
                         placeholder="Quantity (eg. 10)"
                         onChange={(e) => setAmountToList(e.target.value)}
-                        style={{ width: '100%', padding: '12px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
+                        style={{ width: '90%', padding: '12px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
                     />
                     <button onClick={handleListShares} style={{ width: '100%', background: '#0070f3', color: 'white', padding: '12px', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>
                         Sell
